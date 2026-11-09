@@ -10,6 +10,12 @@ struct Task {
     bool completed = false;
 };
 
+std::string formatTime(std::time_t time) {
+    char buffer[16];
+    std::strftime(buffer, sizeof(buffer), "%d-%m-%Y", std::localtime(&time));
+    return buffer;
+}
+
 std::string statusCheck(const Task& task) {
     if (task.completed == true) {
         return "Completed";
@@ -22,21 +28,21 @@ std::string statusCheck(const Task& task) {
 
 void viewTask(std::vector<Task>& tasks) {
     for (int i = 0; i < tasks.size(); i++) {
-        std::cout << tasks[i].task_id << ".\n"
+        std::cout << tasks[i].task_id << ". "
               << tasks[i].name << "\n"
-              << tasks[i].description << "\n"
-              << tasks[i].created_at << "\n"
-              << statusCheck(tasks[i]) << "\n";
+              << "Description: " << tasks[i].description << "\n"
+              << "created at: " << formatTime(tasks[i].created_at) << "\n"
+              << "Status: " << statusCheck(tasks[i]) << "\n";
     }
 }
 
 void addTask(std::vector<Task>& tasks) {
     Task task;
     std::cout << "name of the task: \n";
-    std::getline(std::cin, task.name);
+    std::cin >> task.name;
 
     std::cout << "description of the task: \n";
-    std::getline(std::cin, task.description);
+    std::cin >> task.description;
 
     task.task_id = tasks.size() + 1;
 
