@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <vector>
 
 struct Task {
     std::string name;
@@ -10,76 +11,97 @@ struct Task {
     bool completed = false;
 };
 
-std::string formatTime(std::time_t time) {
+static std::string formatTime(const std::time_t time) {
     char buffer[16];
     std::strftime(buffer, sizeof(buffer), "%d-%m-%Y", std::localtime(&time));
     return buffer;
 }
 
-std::string statusCheck(const Task& task) {
+static std::string statusCheck(const Task& task) {
     if (task.completed == true) {
         return "Completed";
-    } else {
-        return "Not Completed";
     }
+    return "Not Completed";
 }
 
 
-
-void viewTask(std::vector<Task>& tasks) {
-    for (int i = 0; i < tasks.size(); i++) {
-        std::cout << tasks[i].task_id << ". "
-              << tasks[i].name << "\n"
-              << "Description: " << tasks[i].description << "\n"
-              << "created at: " << formatTime(tasks[i].created_at) << "\n"
-              << "Status: " << statusCheck(tasks[i]) << "\n";
+static void viewTask(const std::vector<Task>& tasks) {
+    if (tasks.empty()) {
+        std::cout << "No tasks found.\n";
+    }else {
+        for (const auto& task : tasks) {
+            std::cout << task.task_id << ". "
+                  << task.name << "\n"
+                  << "Description: " << task.description << "\n"
+                  << "created at: " << formatTime(task.created_at) << "\n"
+                  << "Status: " << statusCheck(task) << "\n";
+        }
     }
+
+
 }
 
-void addTask(std::vector<Task>& tasks) {
+static void addTask(std::vector<Task>& tasks) {
     Task task;
     std::cout << "name of the task: \n";
-    std::cin >> task.name;
+    std::cin >> std::ws;
+    getline(std::cin, task.name);
 
     std::cout << "description of the task: \n";
-    std::cin >> task.description;
+    std::cin >> std::ws;
+    getline(std::cin, task.description);
 
     task.task_id = tasks.size() + 1;
 
     tasks.push_back(task);
 }
 
-void completeTask(std::vector<Task>& tasks) {
-    char inp;
-    std::cout << "Which task do you want to complete?: \n";
+static int findTaskIndex(const std::vector<Task>& tasks, int id) {
     for (int i = 0; i < tasks.size(); i++) {
-        std::cout << tasks[i].task_id << ". " << tasks[i].name << " Status: " << statusCheck(tasks[i]) << std::endl;;
+        if (tasks[i].task_id == id) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void completeTask(std::vector<Task>& tasks) {
+    int inp;
+    std::cout << "Which task do you want to complete?: \n";
+    for (const auto& task : tasks) {
+        std::cout << task.task_id << ". " << task.name << " Status: " << statusCheck(task) << std::endl;;
     }
 
-    std::cout << "choose a Task by ID: \n";
-    std::cin >> inp;
-
-    for (int i = 0; i < tasks.size(); i++) {
-        if (tasks[i].task_id == inp) {
-            tasks[i].completed = true;
-            break;
+    int index = -1;
+    while (index == -1) {
+        std::cout << "Choose task by ID.\n";
+        std::cin >> inp;
+        index = findTaskIndex(tasks, inp);
+        if (index == -1) {
+            std::cout << "Please choose a valid Task ID: \n";
         }
     }
 
+    std::cout << "Completing Task " << inp << "\n";
+    tasks[index].completed = true;
 }
 
-void deleteTask(std::vector<Task>& tasks) {
-    char inp;
-    Task task;
+static void deleteTask(std::vector<Task>& tasks) {
+    int inp;
     std::cout << "Which task do you want to delete?: \n";
-    for (int i = 0; i < tasks.size(); i++) {
-        std::cout << tasks[i].task_id << ". " << tasks[i].name << " Status: " << statusCheck(tasks[i]) << std::endl;;
+    for (const auto& task : tasks) {
+        std::cout << task.task_id << ". " << task.name << " Status: " << statusCheck(task) << std::endl;;
     }
 
     std::cout << "choose a Task by ID: \n";
     std::cin >> inp;
 
-    tasks.erase(tasks.begin() + inp);
+    int index = findTaskIndex(tasks, inp);
+    if (index != -1) {
+        tasks.erase(tasks.begin() + index);
+    }else {
+        std::cout << "Please choose a valid Task ID: \n";
+    }
 }
 
 int main() {
@@ -116,17 +138,7 @@ int main() {
             std::cout << "Exiting now\n";
             break;
         }
-
-
-
     }
-
-
-
-
-
-
-
 
     return 0;
 }
