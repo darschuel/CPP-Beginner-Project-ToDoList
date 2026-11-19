@@ -19,7 +19,7 @@ static std::string formatTime(const std::time_t time) {
 }
 
 static std::string statusCheck(const Task& task) {
-    if (task.completed == true) {
+    if (task.completed) {
         return "Completed";
     }
     return "Not Completed";
@@ -80,7 +80,7 @@ static void completeTask(std::vector<Task>& tasks) {
     int inp;
     std::cout << "Which task do you want to complete?: \n";
     for (const auto& task : tasks) {
-        std::cout << task.task_id << ". " << task.name << " Status: " << statusCheck(task) << std::endl;;
+        std::cout << task.task_id << ". " << task.name << " Status: " << statusCheck(task) << std::endl;
     }
 
     int index = -1;
@@ -98,6 +98,10 @@ static void completeTask(std::vector<Task>& tasks) {
 }
 
 static void deleteTask(std::vector<Task>& tasks) {
+    if (tasks.empty()) {
+        std::cout << "No tasks found.\n";
+        return;
+    }
     int inp;
     std::cout << "Which task do you want to delete?: \n";
     for (const auto& task : tasks) {
@@ -172,7 +176,8 @@ int main() {
             case '4':
                 deleteTask(tasks);
                 break;
-            default:;
+            default:
+                std::cout << "Please choose a valid option: \n";
         }
 
         if (input == '5') {
