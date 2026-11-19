@@ -2,6 +2,7 @@
 #include <string>
 #include <ctime>
 #include <vector>
+#include <fstream>
 
 struct Task {
     std::string name;
@@ -51,7 +52,13 @@ static void addTask(std::vector<Task>& tasks) {
     std::cin >> std::ws;
     getline(std::cin, task.description);
 
-    task.task_id = tasks.size() + 1;
+    int maxId = 0;
+    for (const auto& task : tasks) {
+        if (task.task_id > maxId) {
+            maxId = task.task_id;
+        }
+    }
+    task.task_id = maxId + 1;
 
     tasks.push_back(task);
 }
@@ -66,6 +73,10 @@ static int findTaskIndex(const std::vector<Task>& tasks, int id) {
 }
 
 static void completeTask(std::vector<Task>& tasks) {
+    if (tasks.empty()) {
+        std::cout << "No tasks found.\n";
+        return;
+    }
     int inp;
     std::cout << "Which task do you want to complete?: \n";
     for (const auto& task : tasks) {
@@ -104,8 +115,38 @@ static void deleteTask(std::vector<Task>& tasks) {
     }
 }
 
+static void saveTask(const std::vector<Task>& tasks) {
+    std::ofstream file("tasks.txt");
+    if (!file) {
+        std::cout << "could not save tasks\n";
+        return;
+    }
+    for (const auto& task : tasks) {
+        file << task.name << "\n"
+             << task.description << "\n"
+             << task.created_at << "\n"
+             << task.task_id << "\n"
+             << task.completed << "\n";
+    }
+}
+
+static void loadTasks(std::vector<Task>& tasks) {
+    std::ifstream file("tasks.txt");
+    if (!file) {
+        return;
+    }
+    Task task;
+    while (std::getline(file, task.name) &&
+           std::getline(file, task.description)) {
+        file >> task.created_at >> task.task_id >> task.completed;
+        file >> std::ws;
+        tasks.push_back(task);
+           }
+}
+
 int main() {
     std::vector<Task> tasks;
+    loadTasks(tasks);
     char input;
     while (true) {
         std::cout << "-----ToDo List-----\n\n";
@@ -135,6 +176,7 @@ int main() {
         }
 
         if (input == '5') {
+            saveTask(tasks);
             std::cout << "Exiting now\n";
             break;
         }
