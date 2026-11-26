@@ -72,6 +72,21 @@ static int findTaskIndex(const std::vector<Task>& tasks, int id) {
     return -1;
 }
 
+static void cinInputValidation(auto& inp, std::vector<Task>& tasks, int& index) {
+    while (true) {
+        if (!(std::cin >> inp)) {
+            std::cin.clear();
+            std::cin.ignore(1000, '\n');
+        } else {
+            index = findTaskIndex(tasks, inp);
+            if (index != -1) {
+                break;
+            }
+        }
+        std::cout << "Please choose a valid Task ID: \n";
+    }
+}
+
 static void completeTask(std::vector<Task>& tasks) {
     if (tasks.empty()) {
         std::cout << "No tasks found.\n";
@@ -84,14 +99,7 @@ static void completeTask(std::vector<Task>& tasks) {
     }
 
     int index = -1;
-    while (index == -1) {
-        std::cout << "Choose task by ID.\n";
-        std::cin >> inp;
-        index = findTaskIndex(tasks, inp);
-        if (index == -1) {
-            std::cout << "Please choose a valid Task ID: \n";
-        }
-    }
+    cinInputValidation(inp, tasks, index);
 
     std::cout << "Completing Task " << inp << "\n";
     tasks[index].completed = true;
@@ -109,14 +117,12 @@ static void deleteTask(std::vector<Task>& tasks) {
     }
 
     std::cout << "choose a Task by ID: \n";
-    std::cin >> inp;
 
-    int index = findTaskIndex(tasks, inp);
-    if (index != -1) {
-        tasks.erase(tasks.begin() + index);
-    }else {
-        std::cout << "Please choose a valid Task ID: \n";
-    }
+    int index = -1;
+
+    cinInputValidation(inp, tasks, index);
+
+    tasks.erase(tasks.begin() + index);
 }
 
 static void saveTask(const std::vector<Task>& tasks) {
@@ -141,9 +147,9 @@ static void loadTasks(std::vector<Task>& tasks) {
     }
     Task task;
     while (std::getline(file, task.name) &&
-           std::getline(file, task.description)) {
-        file >> task.created_at >> task.task_id >> task.completed;
-        file >> std::ws;
+           std::getline(file, task.description) &&
+           (file >> task.created_at >> task.task_id >> task.completed)) {
+        file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         tasks.push_back(task);
            }
 }
@@ -176,14 +182,12 @@ int main() {
             case '4':
                 deleteTask(tasks);
                 break;
+            case '5':
+                saveTask(tasks);
+                std::cout << "Exiting now\n";
+                return 0;
             default:
                 std::cout << "Please choose a valid option: \n";
-        }
-
-        if (input == '5') {
-            saveTask(tasks);
-            std::cout << "Exiting now\n";
-            break;
         }
     }
 
